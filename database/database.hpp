@@ -7,6 +7,8 @@
 #include <mysql_connection.h>
 #include <mysql_driver.h>
 
+class StorageCrypto;
+
 
 // The main data of users
 struct user
@@ -22,15 +24,17 @@ private:
     // MySQL driver && connection
     sql::mysql::MySQL_Driver *driver;
     std::unique_ptr<sql::Connection> con;
+    std::unique_ptr<StorageCrypto> crypto;
 
 public:
     Database();
+    ~Database();
 
     bool connect(const std::string &host, const std::string &user, const std::string &password, const std::string &database);
 
     void disconnect();
 
-    bool InsertUser(const std::string &usernmae, const std::string &normalized);
+    bool InsertUser(const std::string &username, const std::string &normalized);
 
     std::vector<user> GetUsers();
 };

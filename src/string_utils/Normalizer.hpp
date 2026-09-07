@@ -7,35 +7,31 @@ class Normalizer
 private:
     std::string initial;
 
-    std::string Normalization(std::string str)
+    static std::string Normalization(std::string str)
     {
-        for (int i = 0; i < str.length(); i++)
+        std::string normalized;
+        normalized.reserve(str.size());
+        for (unsigned char raw : str)
         {
-            if ((str[i] >= '0' && str[i] <= '9') || (str[i] >= 'a' && str[i] <= 'z'))
-                continue;
-
-            if (str[i] >= 'A' && str[i] <= 'Z')
+            const char character = static_cast<char>(std::tolower(raw));
+            if ((character >= '0' && character <= '9') || (character >= 'a' && character <= 'z'))
             {
-                str[i] = (str[i] - 'A' + 'a');
+                normalized.push_back(character);
             }
-            else if (str[i] == '.' || str[i] == '-' || str[i] == '_' || str[i] == '/')
+            else if (character == '.' || character == '-' || character == '_' || character == '/')
             {
-                str[i] = '.';
-            }
-            else if (str[i] == '!' || str[i] == '@' || str[i] == '#' || str[i] == '$')
-            {
-                str[i] = '@';
-            }
-            else if (str[i] == '%' || str[i] == '^' || str[i] == '&' || str[i] == '*')
-            {
-                str[i] = '&';
+                if (!normalized.empty() && normalized.back() != '.')
+                    normalized.push_back('.');
             }
         }
+        while (!normalized.empty() && normalized.back() == '.')
+            normalized.pop_back();
+        return normalized;
     }
 
     void generator(std::string &s, std::string curr, int idx, std::vector<std::string> &res)
     {
-        if (idx == s.size())
+        if (static_cast<std::size_t>(idx) == s.size())
         {
             res.push_back(curr);
             return;
@@ -93,6 +89,11 @@ public:
     std::string Normalized()
     {
         return Normalization(initial);
+    }
+
+    static std::string normalize(const std::string &value)
+    {
+        return Normalization(value);
     }
 
     // return all possible denormalized strings
