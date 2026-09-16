@@ -13,9 +13,34 @@ Set `SM_OSINT_ENCRYPTION_KEY` to a 32-byte key written as 64 random hexadecimal 
 After starting MySQL and exporting the database credentials and `SM_OSINT_ENCRYPTION_KEY`, use the local `sm-osint` executable as one pipeline:
 
 ```bash
-./sm-osint --add Honda.Galmad
-./sm-osint --query honda 10
-./sm-osint --stats
+./build/sm-osint --add Honda.Galmad
+./build/sm-osint --query honda 10
+./build/sm-osint --stats
 ```
 
-It encrypts a new record before storage, decrypts records only in process, builds the prefix trie, trains the probability model, and ranks generated username candidates. `account-checker` remains a separate executable for inspecting an individual public profile URL.
+It encrypts a new record before storage, decrypts records only in process, builds the prefix trie, trains the probability model, and ranks generated username candidates.
+
+## Terminal UI and public profile checks
+
+Build both executables, then start the TUI with `python3 tui.py`. Press `e` to
+enter one username and select **Run complete pipeline**. The TUI runs the local
+encrypted-data discovery pipeline and then passes the same username to the
+account-checker, which checks the supported public profile routes (Facebook,
+GitHub, Instagram, X, Threads, and Codeforces). Results labelled `UNKNOWN` are
+inconclusive—typically a login wall, rate limit, or anti-bot response—not a
+claim that a profile is absent.
+
+The checker can also be used outside the TUI:
+
+```bash
+./build/account-checker --username Honda.Galmad
+./build/account-checker https://github.com/Honda-Galmad
+```
+
+Set `SM_OSINT_BIN` and `SM_OSINT_CHECKER_BIN` if the executables are not in
+`./build`. The TUI automatically reads the project `.env` file for database
+credentials and the encryption key (while exported environment values take
+precedence), so it does not repeatedly fail with a missing database password.
+Use Page Up/Page Down to scroll the complete platform-check output. The X API
+lookup is used when `X_BEARER_TOKEN` is set; otherwise the checker uses
+public-page analysis.

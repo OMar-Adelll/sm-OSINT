@@ -10,7 +10,6 @@
 class StorageCrypto;
 
 
-// The main data of users
 struct user
 {
     int id;
@@ -21,7 +20,6 @@ struct user
 class Database
 {
 private:
-    // MySQL driver && connection
     sql::mysql::MySQL_Driver *driver;
     std::unique_ptr<sql::Connection> con;
     std::unique_ptr<StorageCrypto> crypto;

@@ -372,12 +372,52 @@ void print_result(const std::string& url, const AnalysisResult& res) {
     std::cout << "========================================\n";
 }
 
-int main() {
+bool is_safe_username(const std::string& username) {
+    if (username.empty() || username.size() > 64) {
+        return false;
+    }
+    return std::all_of(username.begin(), username.end(), [](unsigned char character) {
+        return std::isalnum(character) || character == '_' || character == '.' || character == '-';
+    });
+}
+
+void print_usage(const char* program) {
+    std::cerr << "Usage: " << program << " [profile-url]\n"
+              << "       " << program << " --username <username>\n";
+}
+
+int main(int argc, char* argv[]) {
     UniversalAnalyzer analyzer;
-    std::string url;
-    std::cout << "Enter target URL to analyze: ";
-    std::cin >> url;
-    AnalysisResult res = analyzer.analyze(url);
-    print_result(url, res);
+    if (argc == 3 && std::string(argv[1]) == "--username") {
+        const std::string username = argv[2];
+        if (!is_safe_username(username)) {
+            std::cerr << "Username must be 1-64 characters using letters, digits, _, . or -.\n";
+            return 2;
+        }
+
+        const std::vector<std::string> urls = {
+            "https://www.facebook.com/" + username,
+            "https://github.com/" + username,
+            "https://www.instagram.com/" + username + "/",
+            "https://x.com/" + username,
+            "https://www.threads.com/@" + username,
+            "https://codeforces.com/profile/" + username,
+        };
+        std::cout << "Checking public profile routes for: " << username << "\n";
+        for (const std::string& url : urls) {
+            print_result(url, analyzer.analyze(url));
+        }
+        return 0;
+    }
+    if (argc != 2) {
+        print_usage(argv[0]);
+        return 2;
+    }
+    const std::string url = argv[1];
+    if (url.empty() || (url.rfind("https://", 0) != 0 && url.rfind("http://", 0) != 0)) {
+        std::cerr << "A full http(s) URL is required.\n";
+        return 2;
+    }
+    print_result(url, analyzer.analyze(url));
     return 0;
 }
