@@ -15,10 +15,11 @@ After starting MySQL and exporting the database credentials and `SM_OSINT_ENCRYP
 ```bash
 ./build/sm-osint --add Honda.Galmad
 ./build/sm-osint --query honda 10
+./build/sm-osint --generate "Honda Galmad" 20
 ./build/sm-osint --stats
 ```
 
-It encrypts a new record before storage, decrypts records only in process, builds the prefix trie, trains the probability model, and ranks generated username candidates.
+It encrypts a new record before storage, decrypts records only in process, builds the prefix trie, trains the probability model, and ranks generated username candidates. `--query` searches the stored trie and displays exact and prefix occurrence counts. `--generate` works without database credentials and produces normalized username variations from a name or username; `--query` additionally ranks those variations using patterns learned from stored records.
 
 ## Terminal UI and public profile checks
 

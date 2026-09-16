@@ -30,12 +30,44 @@ void printUsage(const char *program)
     std::cout << "Usage:\n"
               << "  " << program << " --add <username>\n"
               << "  " << program << " --query <username> [limit]\n"
+              << "  " << program << " --generate <name-or-username> [limit]\n"
               << "  " << program << " --stats\n";
+}
+
+int argumentLimit(int argc, char *argv[], int position)
+{
+    return argc > position ? parseLimit(argv[position]) : 10;
+}
+
+void printCandidates(const std::string &seed, const UsernameProbability *model, int limit)
+{
+    UsernameGenerator generator;
+    std::cout << "Ranked candidate variations:\n";
+    for (const UsernameGenerator::Candidate &candidate : generator.generateRanked(seed, model, limit))
+    {
+        std::cout << "  " << candidate.username;
+        if (model != nullptr && model->samples() > 0)
+            std::cout << " (" << candidate.score << ")";
+        std::cout << '\n';
+    }
 }
 }
 
 int main(int argc, char *argv[])
 {
+    if (argc >= 3 && std::string(argv[1]) == "--generate")
+    {
+        const std::string seed = Normalizer::normalize(argv[2]);
+        if (seed.empty())
+        {
+            std::cerr << "Name has no supported characters\n";
+            return 1;
+        }
+
+        printCandidates(seed, nullptr, argumentLimit(argc, argv, 3));
+        return 0;
+    }
+
     const std::string host = environmentOr("SM_OSINT_DB_HOST", "tcp://127.0.0.1:3306");
     const std::string dbUser = environmentOr("SM_OSINT_DB_USER", "osint");
     const std::string password = environmentOr("SM_OSINT_DB_PASSWORD");
@@ -95,16 +127,14 @@ int main(int argc, char *argv[])
         std::cerr << "Username has no supported characters\n";
         return 1;
     }
-    const int limit = argc >= 4 ? parseLimit(argv[3]) : 10;
+    const int limit = argumentLimit(argc, argv, 3);
 
-    std::cout << "Prefix matches for " << seed << ":\n";
+    std::cout << "Trie matches for " << seed << " (exact: " << trie.countExact(seed)
+              << ", prefix: " << trie.countPrefix(seed) << "):\n";
     for (const std::string &match : trie.suggest(seed, limit))
         std::cout << "  " << match << '\n';
 
-    UsernameGenerator generator;
-    std::cout << "Ranked candidate variations:\n";
-    for (const UsernameGenerator::Candidate &candidate : generator.generateRanked(seed, &probability, limit))
-        std::cout << "  " << candidate.username << " (" << candidate.score << ")\n";
+    printCandidates(seed, &probability, limit);
 
     return 0;
 }

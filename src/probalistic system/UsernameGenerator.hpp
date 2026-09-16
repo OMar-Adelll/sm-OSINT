@@ -90,7 +90,7 @@ private:
             {
                 out.push_back(c);
             }
-            else if (c == '.' || c == '_' || c == '-' || c == '/')
+            else if (c == '.' || c == '_' || c == '-' || c == '/' || std::isspace(raw))
             {
                 if (!out.empty() && out.back() != '.')
                     out.push_back('.');

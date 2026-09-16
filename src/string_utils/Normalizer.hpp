@@ -18,7 +18,7 @@ private:
             {
                 normalized.push_back(character);
             }
-            else if (character == '.' || character == '-' || character == '_' || character == '/')
+            else if (character == '.' || character == '-' || character == '_' || character == '/' || std::isspace(raw))
             {
                 if (!normalized.empty() && normalized.back() != '.')
                     normalized.push_back('.');

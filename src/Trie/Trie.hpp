@@ -92,6 +92,7 @@ public:
     void insert(const std::string &word)
     {
         TRIENODE *CURR = root;
+        root->pfx++;
 
         for (char c : word)
         {
@@ -139,6 +140,12 @@ public:
         std::string current = prefix;
         collectSuggestions(node, current, results, limit);
         return results;
+    }
+
+    // A descriptive alias for callers that use the trie as a search index.
+    std::vector<std::string> search(const std::string &prefix, int limit = 10) const
+    {
+        return suggest(prefix, limit);
     }
 
     int count(const std::string &word)
